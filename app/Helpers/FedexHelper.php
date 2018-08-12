@@ -48,6 +48,10 @@ class FedexHelper
         return array('TransactionDetail' => array('CustomerTransactionId' => rand(100000, 999999)));
     }
 
+    public static function totalInsuredValue(){
+        return array('Ammount'=>100,'Currency'=>'USD');
+    }
+
     public static function printSuccess($client, $response) {
         self::printReply($client, $response);
     }
@@ -305,4 +309,22 @@ class FedexHelper
             }
         }
     }
+
+    public static function addPackageLineItem1(){
+            $packageLineItem = array(
+                'SequenceNumber'=>1,
+                'GroupPackageCount'=>1,
+                'Weight' => array(
+                    'Value' => 50.0,
+                    'Units' => 'LB'
+                ),
+                'Dimensions' => array(
+                    'Length' => 108,
+                    'Width' => 5,
+                    'Height' => 5,
+                    'Units' => 'IN'
+                )
+            );
+            return $packageLineItem;
+        }
 }

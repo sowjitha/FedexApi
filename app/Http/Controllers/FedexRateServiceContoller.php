@@ -14,8 +14,8 @@ class FedexRateServiceContoller extends Controller
     private function getVersion ()
     {
         return array( "Version" => array(
-            'ServiceId' => 'disp',
-            'Major' => 15,
+            'ServiceId' => 'crs',
+            'Major' => 22,
             'Intermediate' => 0,
             'Minor' => 0
         ));
@@ -23,18 +23,21 @@ class FedexRateServiceContoller extends Controller
 
 
     private function buildRequest($input){
-        $PickupServiceRequest['WebAuthenticationDetail'] = FedexHelper::getWebAuthenticationDetail()['ucred'];
-        $PickupServiceRequest['ClientDetail'] = FedexHelper::getClientDetail()['ClientDetail'];
-        $PickupServiceRequest['TransactionDetail'] = FedexHelper::getTransactionDetail()['TransactionDetail'];
-        $PickupServiceRequest['Version'] = $this->getVersion()['Version'];
-        $PickupServiceRequest['PickupAddress'] = $input->PickupAddress;
-        $PickupServiceRequest['PickupRequestType'] = $input->PickupRequestType;
-        $PickupServiceRequest['DispatchDate'] = $input->DispatchDate;
-        $PickupServiceRequest['PackageReadyTime'] = $input->PackageReadyTime;
-        $PickupServiceRequest['CustomerCloseTime'] = $input->CustomerCloseTime;
-        $PickupServiceRequest['Carriers'] = $input->Carriers;
-
-        return $PickupServiceRequest;
+        $RateServiceRequest['WebAuthenticationDetail'] = FedexHelper::getWebAuthenticationDetail()['ucred'];
+        $RateServiceRequest['ClientDetail'] = FedexHelper::getClientDetail()['ClientDetail'];
+        $RateServiceRequest['TransactionDetail'] = FedexHelper::getTransactionDetail()['TransactionDetail'];
+        $RateServiceRequest['Version'] = $this->getVersion()['Version'];
+        $RateServiceRequest['RequestedShipment']['DropoffType'] = 'REGULAR_PICKUP';
+        $RateServiceRequest['RequestedShipment']['ShipTimestamp'] = date('c');
+        $RateServiceRequest['RequestedShipment']['ServiceType'] = 'INTERNATIONAL_PRIORITY';
+        $RateServiceRequest['RequestedShipment']['PackagingType'] = 'YOUR_PACKAGING';
+        $RateServiceRequest['RequestedShipment']['TotalInsuredValue'] = FedexHelper::totalInsuredValue();
+        $RateServiceRequest['RequestedShipment']['Shipper'] = FedexHelper::getProperty('shipper');
+        $RateServiceRequest['RequestedShipment']['Recipient'] = FedexHelper::getProperty('recipient');
+        $RateServiceRequest['RequestedShipment']['ShippingChargesPayment'] = FedexHelper::getProperty('shippingchargespayment');
+        $RateServiceRequest['RequestedShipment']['PackageCount'] = '1';
+        $RateServiceRequest['RequestedShipment']['RequestedPackageLineItems'] = FedexHelper::addPackageLineItem1();
+        return $RateServiceRequest;
 
     }
 
@@ -46,11 +49,11 @@ class FedexRateServiceContoller extends Controller
         $FinalRequest  = $this->buildRequest($request);
         //print_r($FinalRequest);
         //dd("echo");
-        dd($validateClient->__getFunctions());
+       // dd($validateClient->__getFunctions());
         try {
 
 
-            $postalResponse = $validateClient -> getPickupAvailability($FinalRequest);
+            $postalResponse = $validateClient -> getRates($FinalRequest);
             //dd($postalResponse);
 
 
